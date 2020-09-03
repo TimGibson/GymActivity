@@ -25,9 +25,12 @@ function Map() {
     const [loading, setLoading] = useState(false)
 
     const findGyms = (lat, lng) => {
-        axios.get(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=gym&inputtype=textquery&fields=photos,geometry,name,opening_hours,rating&locationbias=circle:2000@${lat},${lng}&key=${API_KEY}`)
+        axios.post('http://localhost:3000/users', { lat, lng})
             .then(res => {
-                console.log('ayo', res)
+                console.log('uhm', res)
+            })
+            .catch(err => {
+                console.log('err', err)
             })
     }
 
@@ -65,6 +68,7 @@ function Map() {
                 </div>
             }
             <div style={{ position: "absolute", top:0, left: 40, zIndex: 2}}>
+                <button onClick={() => findGyms(34, 73)}>testapi</button>
                 <form onSubmit={submitPostal}>
                     <input style={{outline: 0, border: 0, padding: '4.6px 8px', width: 130, margin: 10, position: 'relative', borderRadius: '4px', fontSize: '15.1px', fontFamily: 'Open Sans' }}
                            type="text"
