@@ -2,16 +2,17 @@ var express = require('express');
 var router = express.Router();
 const axios = require('axios');
 
-router.get('/', function(req, res, next) {
-    axios.get(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=gym&inputtype=textquery&fields=geometry,photos,formatted_address,name,opening_hours,rating&locationbias=circle:2000@47.6918452,-122.2226413&key=${process.env.MAPS_API_KEY}`)
-        .then(response => {
-            console.log("here loser", response)
-            res.send("hey stinker")
-        })
-        .catch(err => {
-            console.log(err);
-            res.send("uhoh poopy!")
-        });
+router.post('/', function(req, res, next) {
+  let lat = req.body.lat
+  let lng = req.body.lng
+  axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=1500&type=gym&keyword=gym&key=${process.env.MAPS_API_KEY}`)
+      .then(response => {
+          res.send(response.data)
+      })
+      .catch(err => {
+          console.log(err);
+          res.send(err)
+      });
 });
 
 module.exports = router;
