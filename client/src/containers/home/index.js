@@ -30,7 +30,6 @@ function Map() {
     const findGyms = (lat, lng) => {
         axios.post('http://localhost:3000/test', { lat, lng })
             .then(res => {
-                console.log('uhm', res.data.results)
                 let nextPins = []
                 res.data.results.map(gym => {
                    nextPins.push({ latitude: gym.geometry.location.lat , longitude: gym.geometry.location.lng })
