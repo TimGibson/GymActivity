@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useState, Fragment } from 'react';
-import ReactMapGL, { Marker, GeolocateControl, LinearInterpolator } from 'react-map-gl';
-import logo from '../../images/here.png';
+import ReactMapGL, { Marker, GeolocateControl, LinearInterpolator, Popup } from 'react-map-gl';
 import load_icon from '../../images/loading.gif'
 import axios from 'axios';
 import Pins from './pins';
+import PopupContent from "./popup";
 
 const API_KEY = process.env.REACT_APP_MAPS_API_KEY;
 
@@ -19,22 +19,30 @@ function Map() {
     const [viewport, setViewport] = useState({
         width: '100vw',
         height: '100vh',
-        latitude: 37.7577,
-        longitude: -122.4376,
+        latitude: 43.650256,
+        longitude: -79.387024,
         zoom: 13
     });
     const [postal, setPostal] = useState('')
     const [loading, setLoading] = useState(false)
     const [pins, setPins] = useState([])
+    const [popup, setPopup] = useState({})
 
     const findGyms = (lat, lng) => {
         axios.post('http://localhost:3000/test', { lat, lng })
             .then(res => {
+                console.log(res)
                 let nextPins = []
                 res.data.results.map(gym => {
-                   nextPins.push({ latitude: gym.geometry.location.lat , longitude: gym.geometry.location.lng })
+                    console.log(gym)
+                    nextPins.push({
+                        latitude: gym.geometry.location.lat,
+                        longitude: gym.geometry.location.lng,
+                        name: gym.name,
+                        photos: gym.photos,
+                        hours: gym.opening_hours
+                    })
                 })
-                console.log(nextPins)
                 setPins(nextPins)
             })
             .catch(err => {
@@ -47,7 +55,6 @@ function Map() {
         setLoading(true)
         axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${postal}&key=${API_KEY}`)
             .then(res => {
-                console.log(res)
                 setLoading(false)
                 let location = res.data.results[0].geometry.location && res.data.results[0].geometry.location
                 if (location) {
@@ -68,9 +75,8 @@ function Map() {
         });
     };
 
-    const onClickPin = city => {
-        console.log(city)
-        console.log('hello mfer')
+    const onClickPin = info => {
+        setPopup(info)
     }
 
     const onGeolocate = info => {
@@ -101,15 +107,26 @@ function Map() {
                 {...viewport}
                 onViewportChange={nextViewport => setViewport(nextViewport)}
             >
+                {popup.latitude &&
+                    <Popup
+                        offsetTop={8}
+                        closeOnClick={false}
+                        closeButton={false}
+                        tipSize={1}
+                        anchor="top"
+                        longitude={popup.longitude ? popup.longitude : 0}
+                        latitude={popup.latitude ? popup.latitude : 0}
+                        onClose={() => setPopup({})}
+                    >
+                        <PopupContent info={popup}/>
+                    </Popup>
+                }
                 <GeolocateControl
                     style={geolocateStyle}
                     positionOptions={{enableHighAccuracy: true}}
                     onGeolocate={onGeolocate}
                 />
                 <Pins data={pins} onClick={onClickPin} />
-                <Marker latitude={37.78} longitude={-122.41} offsetLeft={-20} offsetTop={-10}>
-                    <img src={logo} alt={"location"} style={{ width: 50, height: 50 }}/>
-                </Marker>
             </ReactMapGL>
         </Fragment>
 
